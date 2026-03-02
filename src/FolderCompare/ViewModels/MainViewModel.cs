@@ -35,6 +35,8 @@ public partial class MainViewModel : ObservableObject
 
     public ObservableCollection<StatusFilterItem> StatusFilters { get; }
 
+    public ObservableCollection<ComparisonTreeNode> UnifiedFlatItems { get; } = new();
+
     public MainViewModel()
     {
         StatusFilters = new ObservableCollection<StatusFilterItem>
@@ -91,52 +93,61 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    [RelayCommand(CanExecute = nameof(CanCompare))]
-    private async Task Compare()
-    {
-        if (!Directory.Exists(LeftFolderPath) || !Directory.Exists(RightFolderPath))
-        {
-            StatusText = "One or both folder paths do not exist.";
-            return;
-        }
+         [RelayCommand(CanExecute = nameof(CanCompare))]
+         private async Task Compare()
+         {
+             if (!Directory.Exists(LeftFolderPath) || !Directory.Exists(RightFolderPath))
+             {
+                 StatusText = "One or both folder paths do not exist.";
+                 return;
+             }
 
-        IsComparing = true;
-        AllItems.Clear();
-        _cts = new CancellationTokenSource();
+             IsComparing = true;
+             AllItems.Clear();
+             UnifiedFlatItems.Clear();
+             _cts = new CancellationTokenSource();
 
-        var progress = new Progress<int>(percent => ProgressPercent = percent);
+             var progress = new Progress<int>(percent => ProgressPercent = percent);
 
-        try
-        {
-            var results = await _comparer.CompareAsync(LeftFolderPath, RightFolderPath, progress, _cts.Token);
+             try
+             {
+                 var results = await _comparer.CompareAsync(LeftFolderPath, RightFolderPath, progress, _cts.Token);
 
-            foreach (var item in results)
-            {
-                AllItems.Add(item);
-            }
+                 foreach (var item in results)
+                 {
+                     AllItems.Add(item);
+                 }
 
-            foreach (var filter in StatusFilters)
-            {
-                filter.Count = AllItems.Count(i => i.Status == filter.Status);
-            }
+                 // Build unified tree and flatten for list view
+                 var unifiedTree = ComparisonTreeNode.BuildUnifiedTree(results);
+                 var flatList = ComparisonTreeNode.FlattenTree(unifiedTree);
+                 foreach (var node in flatList)
+                 {
+                     UnifiedFlatItems.Add(node);
+                 }
 
-            StatusText = $"Comparison complete: {AllItems.Count} items found.";
-        }
-        catch (OperationCanceledException)
-        {
-            StatusText = "Comparison cancelled.";
-        }
-        catch (Exception ex)
-        {
-            StatusText = $"Error: {ex.Message}";
-        }
-        finally
-        {
-            IsComparing = false;
-            _cts?.Dispose();
-            _cts = null;
-        }
-    }
+                 foreach (var filter in StatusFilters)
+                 {
+                     filter.Count = AllItems.Count(i => i.Status == filter.Status);
+                 }
+
+                 StatusText = $"Comparison complete: {AllItems.Count} items found.";
+             }
+             catch (OperationCanceledException)
+             {
+                 StatusText = "Comparison cancelled.";
+             }
+             catch (Exception ex)
+             {
+                 StatusText = $"Error: {ex.Message}";
+             }
+             finally
+             {
+                 IsComparing = false;
+                 _cts?.Dispose();
+                 _cts = null;
+             }
+         }
 
     private bool CanCompare() =>
         !IsComparing

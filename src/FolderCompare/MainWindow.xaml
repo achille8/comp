@@ -12,7 +12,11 @@
         WindowStartupLocation="CenterScreen"
         Background="White">
 
-    <Grid>
+      <Window.Resources>
+          <converters:DepthToMarginConverter x:Key="DepthToMarginConverter" IndentPerLevel="20" />
+      </Window.Resources>
+
+      <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -125,91 +129,106 @@
                      Background="#E0E0E0"
                      BorderThickness="0" />
 
-        <!-- ==================== MAIN CONTENT: DataGrid ==================== -->
-        <DataGrid Grid.Row="3"
-                  x:Name="ResultsGrid"
-                  ItemsSource="{Binding FilteredItems}"
-                  Style="{StaticResource ComparisonDataGridStyle}">
-            <DataGrid.RowStyle>
-                <Style TargetType="DataGridRow">
-                    <Setter Property="Background"
-                            Value="{Binding Status, Converter={StaticResource StatusToBrushConverter}}" />
-                    <EventSetter Event="MouseDoubleClick" Handler="DataGridRow_DoubleClick" />
-                    <Style.Triggers>
-                        <Trigger Property="IsSelected" Value="True">
-                            <Setter Property="Background" Value="{StaticResource PrimaryAccentBrush}" />
-                            <Setter Property="Foreground" Value="White" />
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </DataGrid.RowStyle>
-            <DataGrid.Columns>
-                <!-- Status Icon -->
-                <DataGridTextColumn Header="" Width="36"
-                                    Binding="{Binding Status, Converter={StaticResource StatusToIconConverter}}"
-                                    CanUserSort="True" SortMemberPath="Status">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="HorizontalAlignment" Value="Center" />
-                            <Setter Property="FontSize" Value="14" />
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
-
-                <!-- Status Text -->
-                <DataGridTextColumn Header="Status" Width="100"
-                                    Binding="{Binding Status}"
-                                    CanUserSort="True" SortMemberPath="Status">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="FontWeight" Value="SemiBold" />
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
-
-                <!-- Name -->
-                <DataGridTextColumn Header="Name" Width="200"
-                                    Binding="{Binding Name}"
-                                    CanUserSort="True" SortMemberPath="Name" />
-
-                <!-- Relative Path -->
-                <DataGridTextColumn Header="Relative Path" Width="*"
-                                    Binding="{Binding RelativePath}"
-                                    CanUserSort="True" SortMemberPath="RelativePath" />
-
-                <!-- Left Size -->
-                <DataGridTextColumn Header="Left Size" Width="90"
-                                    Binding="{Binding LeftSize, Converter={StaticResource FileSizeConverter}}"
-                                    CanUserSort="True" SortMemberPath="LeftSize">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="HorizontalAlignment" Value="Right" />
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
-
-                <!-- Right Size -->
-                <DataGridTextColumn Header="Right Size" Width="90"
-                                    Binding="{Binding RightSize, Converter={StaticResource FileSizeConverter}}"
-                                    CanUserSort="True" SortMemberPath="RightSize">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="HorizontalAlignment" Value="Right" />
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
-
-                <!-- Left Modified -->
-                <DataGridTextColumn Header="Left Modified" Width="140"
-                                    Binding="{Binding LeftModified, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}"
-                                    CanUserSort="True" SortMemberPath="LeftModified" />
-
-                <!-- Right Modified -->
-                <DataGridTextColumn Header="Right Modified" Width="140"
-                                    Binding="{Binding RightModified, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}"
-                                    CanUserSort="True" SortMemberPath="RightModified" />
-            </DataGrid.Columns>
-        </DataGrid>
+          <!-- ==================== MAIN CONTENT: Single ListView ==================== -->
+          <ListView Grid.Row="3"
+                    ItemsSource="{Binding UnifiedFlatItems}"
+                    x:Name="MainListView">
+              <ListView.View>
+                  <GridView>
+                      <GridViewColumn Header="Left Name" Width="250">
+                          <GridViewColumn.CellTemplate>
+                              <DataTemplate>
+                                  <TextBlock Text="{Binding Name}"
+                                             Margin="{Binding Depth, Converter={StaticResource DepthToMarginConverter}}"
+                                             FontWeight="{Binding IsDirectory, Converter={StaticResource FolderFontWeightConverter}}"
+                                             VerticalAlignment="Center" />
+                              </DataTemplate>
+                          </GridViewColumn.CellTemplate>
+                      </GridViewColumn>
+                      <GridViewColumn Header="Left Ext" Width="80">
+                          <GridViewColumn.CellTemplate>
+                              <DataTemplate>
+                                  <TextBlock Text="{Binding LeftExtension}"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Center"
+                                             Visibility="{Binding IsDirectory, Converter={StaticResource InvertBoolToVisibilityConverter}}" />
+                              </DataTemplate>
+                          </GridViewColumn.CellTemplate>
+                      </GridViewColumn>
+                      <GridViewColumn Header="Left Size" Width="100">
+                          <GridViewColumn.CellTemplate>
+                              <DataTemplate>
+                                  <TextBlock Text="{Binding LeftSize, Converter={StaticResource FileSizeConverter}}"
+                                             HorizontalAlignment="Right"
+                                             VerticalAlignment="Center"
+                                             Visibility="{Binding IsDirectory, Converter={StaticResource InvertBoolToVisibilityConverter}}" />
+                              </DataTemplate>
+                          </GridViewColumn.CellTemplate>
+                      </GridViewColumn>
+                      <GridViewColumn Header="Left Modified" Width="140">
+                          <GridViewColumn.CellTemplate>
+                              <DataTemplate>
+                                  <TextBlock Text="{Binding LeftModified, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}"
+                                             VerticalAlignment="Center"
+                                             Visibility="{Binding IsDirectory, Converter={StaticResource InvertBoolToVisibilityConverter}}" />
+                              </DataTemplate>
+                          </GridViewColumn.CellTemplate>
+                      </GridViewColumn>
+                      <GridViewColumn Header="Right Name" Width="250">
+                          <GridViewColumn.CellTemplate>
+                              <DataTemplate>
+                                  <TextBlock Text="{Binding Name}"
+                                             Margin="{Binding Depth, Converter={StaticResource DepthToMarginConverter}}"
+                                             FontWeight="{Binding IsDirectory, Converter={StaticResource FolderFontWeightConverter}}"
+                                             VerticalAlignment="Center" />
+                              </DataTemplate>
+                          </GridViewColumn.CellTemplate>
+                      </GridViewColumn>
+                      <GridViewColumn Header="Right Ext" Width="80">
+                          <GridViewColumn.CellTemplate>
+                              <DataTemplate>
+                                  <TextBlock Text="{Binding RightExtension}"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Center"
+                                             Visibility="{Binding IsDirectory, Converter={StaticResource InvertBoolToVisibilityConverter}}" />
+                              </DataTemplate>
+                          </GridViewColumn.CellTemplate>
+                      </GridViewColumn>
+                      <GridViewColumn Header="Right Size" Width="100">
+                          <GridViewColumn.CellTemplate>
+                              <DataTemplate>
+                                  <TextBlock Text="{Binding RightSize, Converter={StaticResource FileSizeConverter}}"
+                                             HorizontalAlignment="Right"
+                                             VerticalAlignment="Center"
+                                             Visibility="{Binding IsDirectory, Converter={StaticResource InvertBoolToVisibilityConverter}}" />
+                              </DataTemplate>
+                          </GridViewColumn.CellTemplate>
+                      </GridViewColumn>
+                      <GridViewColumn Header="Right Modified" Width="140">
+                          <GridViewColumn.CellTemplate>
+                              <DataTemplate>
+                                  <TextBlock Text="{Binding RightModified, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}"
+                                             VerticalAlignment="Center"
+                                             Visibility="{Binding IsDirectory, Converter={StaticResource InvertBoolToVisibilityConverter}}" />
+                              </DataTemplate>
+                          </GridViewColumn.CellTemplate>
+                      </GridViewColumn>
+                  </GridView>
+              </ListView.View>
+              <ListView.ItemContainerStyle>
+                  <Style TargetType="ListViewItem">
+                      <Setter Property="Background" Value="{Binding Status, Converter={StaticResource StatusToBrushConverter}}" />
+                      <Setter Property="Margin" Value="0,1" />
+                      <EventSetter Event="MouseDoubleClick" Handler="ListViewItem_MouseDoubleClick" />
+                      <Style.Triggers>
+                          <Trigger Property="IsSelected" Value="True">
+                              <Setter Property="Background" Value="{StaticResource PrimaryAccentBrush}" />
+                              <Setter Property="Foreground" Value="White" />
+                          </Trigger>
+                      </Style.Triggers>
+                  </Style>
+              </ListView.ItemContainerStyle>
+          </ListView>
 
         <!-- ==================== STATUS BAR ==================== -->
         <Border Grid.Row="4" Style="{StaticResource StatusBarStyle}">

@@ -2,11 +2,14 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:converters="clr-namespace:FolderCompare.Converters">
 
-    <!-- Converter Instances -->
-    <converters:StatusToBrushConverter x:Key="StatusToBrushConverter" />
-    <converters:FileSizeConverter x:Key="FileSizeConverter" />
-    <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-    <converters:StatusToIconConverter x:Key="StatusToIconConverter" />
+     <!-- Converter Instances -->
+     <converters:StatusToBrushConverter x:Key="StatusToBrushConverter" />
+     <converters:FileSizeConverter x:Key="FileSizeConverter" />
+     <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+     <converters:InvertBoolToVisibilityConverter x:Key="InvertBoolToVisibilityConverter" />
+     <converters:StatusToIconConverter x:Key="StatusToIconConverter" />
+     <converters:FolderFontWeightConverter x:Key="FolderFontWeightConverter" />
+     <converters:DepthToIndentConverter x:Key="DepthToIndentConverter" IndentPerLevel="20" />
 
     <!-- Color Scheme -->
     <Color x:Key="PrimaryDarkColor">#2D3436</Color>
@@ -221,6 +224,75 @@
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+     <!-- TreeView Style for Comparison -->
+     <Style x:Key="ComparisonTreeViewStyle" TargetType="TreeView">
+         <Setter Property="BorderBrush" Value="#CCCCCC" />
+         <Setter Property="BorderThickness" Value="1" />
+         <Setter Property="Background" Value="White" />
+         <Setter Property="FontSize" Value="12" />
+         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+     </Style>
+
+     <!-- ListView Style for Comparison -->
+     <Style x:Key="ComparisonListViewStyle" TargetType="ListView">
+         <Setter Property="BorderBrush" Value="#CCCCCC" />
+         <Setter Property="BorderThickness" Value="1" />
+         <Setter Property="Background" Value="White" />
+         <Setter Property="FontSize" Value="12" />
+         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+     </Style>
+
+    <!-- TreeViewItem Style -->
+    <Style TargetType="TreeViewItem">
+        <Setter Property="Padding" Value="2,0,0,0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TreeViewItem">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Border Grid.Column="1"
+                                Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="true">
+                            <ContentPresenter x:Name="PART_Header"
+                                              ContentSource="Header"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                        </Border>
+                        <ItemsPresenter x:Name="ItemsHost"
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Margin="19,0,0,0" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsExpanded" Value="false">
+                            <Setter TargetName="ItemsHost" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="HasItems" Value="false">
+                            <Setter TargetName="ItemsHost" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource PrimaryAccentBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!-- Status Bar Style -->

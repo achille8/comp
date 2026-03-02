@@ -14,15 +14,19 @@ public partial class MainWindow : Window
         DataContext = new MainViewModel();
     }
 
-    private void DataGridRow_DoubleClick(object sender, MouseButtonEventArgs e)
+    private void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        if (sender is DataGridRow row && row.DataContext is ComparisonItem item)
+        if (sender is ListViewItem item && item.DataContext is ComparisonTreeNode node)
         {
             // Don't open diff for directories
-            if (item.IsDirectory)
+            if (node.IsDirectory)
                 return;
 
-            var viewModel = new FileCompareViewModel(item.LeftFullPath, item.RightFullPath, item.RelativePath);
+            // Ensure we have both paths
+            if (string.IsNullOrEmpty(node.LeftFullPath) || string.IsNullOrEmpty(node.RightFullPath))
+                return;
+
+            var viewModel = new FileCompareViewModel(node.LeftFullPath, node.RightFullPath, node.RelativePath);
             var window = new FileCompareWindow(viewModel)
             {
                 Owner = this
